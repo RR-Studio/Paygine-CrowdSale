@@ -1050,16 +1050,11 @@ library SafeMath {
 
 
 interface PaygineCoin {
-    function balanceOf(address who) public constant returns (uint256);
+  function balanceOf(address who) public constant returns (uint256);
   function transfer(address to, uint256 value) public returns (bool);
-    function allowance(address owner, address spender) public constant returns (uint256);   
+  function allowance(address owner, address spender) public constant returns (uint256);   
   function transferFrom(address from, address to, uint256 value) public returns (bool);
   function approve(address spender, uint256 value) public returns (bool);
-}
-
-
-interface MyFiatContract {
-    function GetPrice() constant returns (uint);
 }
 
 
