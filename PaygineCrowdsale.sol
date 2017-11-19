@@ -1049,7 +1049,7 @@ library SafeMath {
 }
 
 
-interface PaygineToken {
+interface PaygineCoin {
 	function balanceOf(address who) public constant returns (uint256);
   function transfer(address to, uint256 value) public returns (bool);
 	function allowance(address owner, address spender) public constant returns (uint256);  	
@@ -1244,7 +1244,7 @@ contract CrowdsalePaygine is TickerController, Ownable {
     using SafeMath for uint256;
 
     // The token being sold
-    PaygineToken public token = PaygineToken(0x388ace50bfeba98e15af4ab1d754bda7823e34c0);
+    PaygineCoin public token = PaygineCoin(0x388ace50bfeba98e15af4ab1d754bda7823e34c0);
 
     // Price of 1 token in USD cents
     uint256 public priceInCents = 100;

@@ -204,18 +204,18 @@ contract BurnableToken is StandardToken {
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `StandardToken` functions.
  */
-contract PaygineToken is BurnableToken {
+contract PaygineCoin is BurnableToken {
 
-  string public constant name = "Paygine Token";
+  string public constant name = "Paygine Coin";
   string public constant symbol = "PGC";
   uint8 public constant decimals = 18;
 
-  uint256 public constant INITIAL_SUPPLY = 129650000 * (10 ** uint256(decimals));
+  uint256 public constant INITIAL_SUPPLY = 151750000 * (10 ** uint256(decimals));
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function Paygine() {
+  function PaygineCoin() {
     totalSupply = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
   }
