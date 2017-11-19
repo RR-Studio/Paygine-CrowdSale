@@ -1,5 +1,5 @@
 pragma solidity ^0.4.16;
- 
+
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
@@ -10,26 +10,26 @@ library SafeMath {
     assert(a == 0 || c / a == b);
     return c;
   }
- 
+
   function div(uint256 a, uint256 b) internal constant returns (uint256) {
     // assert(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
- 
+
   function sub(uint256 a, uint256 b) internal constant returns (uint256) {
     assert(b <= a);
     return a - b;
   }
- 
+
   function add(uint256 a, uint256 b) internal constant returns (uint256) {
     uint256 c = a + b;
     assert(c >= a);
     return c;
   }
 }
- 
+
 /**
  * @title ERC20Basic
  * @dev Simpler version of ERC20 interface
@@ -41,7 +41,7 @@ contract ERC20Basic {
   function transfer(address to, uint256 value) public returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
- 
+
 /**
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
@@ -52,16 +52,16 @@ contract ERC20 is ERC20Basic {
   function approve(address spender, uint256 value) public returns (bool);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
- 
+
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
  */
 contract BasicToken is ERC20Basic {
   using SafeMath for uint256;
- 
+
   mapping(address => uint256) balances;
- 
+
   /**
   * @dev transfer token for a specified address
   * @param _to The address to transfer to.
@@ -70,14 +70,14 @@ contract BasicToken is ERC20Basic {
   function transfer(address _to, uint256 _value) public returns (bool) {
     require(_to != address(0));
     require(_value <= balances[msg.sender]);
- 
+
     // SafeMath.sub will throw if there is not enough balance.
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
     Transfer(msg.sender, _to, _value);
     return true;
   }
- 
+
   /**
   * @dev Gets the balance of the specified address.
   * @param _owner The address to query the the balance of.
@@ -86,9 +86,9 @@ contract BasicToken is ERC20Basic {
   function balanceOf(address _owner) public constant returns (uint256 balance) {
     return balances[_owner];
   }
- 
+
 }
- 
+
 /**
  * @title Standard ERC20 token
  *
@@ -97,10 +97,10 @@ contract BasicToken is ERC20Basic {
  * @dev Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
  */
 contract StandardToken is ERC20, BasicToken {
- 
+
   mapping (address => mapping (address => uint256)) internal allowed;
- 
- 
+
+
   /**
    * @dev Transfer tokens from one address to another
    * @param _from address The address which you want to send tokens from
@@ -111,14 +111,14 @@ contract StandardToken is ERC20, BasicToken {
     require(_to != address(0));
     require(_value <= balances[_from]);
     require(_value <= allowed[_from][msg.sender]);
- 
+
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
     Transfer(_from, _to, _value);
     return true;
   }
- 
+
   /**
    * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
    *
@@ -134,7 +134,7 @@ contract StandardToken is ERC20, BasicToken {
     Approval(msg.sender, _spender, _value);
     return true;
   }
- 
+
   /**
    * @dev Function to check the amount of tokens that an owner allowed to a spender.
    * @param _owner address The address which owns the funds.
@@ -144,7 +144,7 @@ contract StandardToken is ERC20, BasicToken {
   function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
     return allowed[_owner][_spender];
   }
- 
+
   /**
    * approve should be called when allowed[_spender] == 0. To increment
    * allowed value is better to use this function to avoid 2 calls (and wait until
@@ -156,7 +156,7 @@ contract StandardToken is ERC20, BasicToken {
     Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
- 
+
   function decreaseApproval (address _spender, uint _subtractedValue) public returns (bool success) {
     uint oldValue = allowed[msg.sender][_spender];
     if (_subtractedValue > oldValue) {
@@ -167,18 +167,18 @@ contract StandardToken is ERC20, BasicToken {
     Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
- 
+
 }
- 
- 
+
+
 /**
  * @title Burnable Token
  * @dev Token that can be irreversibly burned (destroyed).
  */
 contract BurnableToken is StandardToken {
- 
+
     event Burn(address indexed burner, uint256 value);
- 
+
     /**
      * @dev Burns a specific amount of tokens.
      * @param _value The amount of token to be burned.
@@ -188,37 +188,36 @@ contract BurnableToken is StandardToken {
         require(_value <= balances[msg.sender]);
         // no need to require value <= totalSupply, since that would imply the
         // sender's balance is greater than the totalSupply, which *should* be an assertion failure
- 
+
         address burner = msg.sender;
         balances[burner] = balances[burner].sub(_value);
         totalSupply = totalSupply.sub(_value);
         Burn(burner, _value);
     }
 }
- 
- 
- 
+
+
+
 /**
  * @title SimpleToken
  * @dev Very simple ERC20 Token example, where all tokens are pre-assigned to the creator.
  * Note they can later distribute these tokens as they wish using `transfer` and other
  * `StandardToken` functions.
  */
-contract Paygine is BurnableToken {
-  event PaygineHasDeployed(uint time);
- 
-  string public constant name = "Paygine";
+contract PaygineToken is BurnableToken {
+
+  string public constant name = "Paygine Token";
   string public constant symbol = "PGC";
   uint8 public constant decimals = 18;
- 
+
   uint256 public constant INITIAL_SUPPLY = 129650000 * (10 ** uint256(decimals));
- 
+
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
   function Paygine() {
     totalSupply = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
-    PaygineHasDeployed(now);
   }
+  
 }

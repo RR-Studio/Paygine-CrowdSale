@@ -1259,7 +1259,7 @@ contract CrowdsalePaygine is TickerController, Ownable {
     uint256 public weiRaised = 0;  
 
     // Number of tokens already sold through this contract*/
-    uint256 public tokensSold = 0;
+    uint256 public funded = 0;
 
     // How many distinct addresses have invested 
     uint256 public investorCount = 0;
@@ -1284,23 +1284,6 @@ contract CrowdsalePaygine is TickerController, Ownable {
     function CrowdsalePaygine() {
       beneficiary = msg.sender;
     }
-	//event LowTokensOnContract(uint amount);
-
-  //mapping(address => uint256) purchases;  // сколько токенов купили на данный адрес 
-    
-  //тот кому идут эфиры (creator of contract)
- 
-  //uint restrictedPercent;		
- 
-  //address restricted;
- 
-  
-
-
-
-  	// function purchasesOf(address purchaser) public constant returns (uint256 value) {
-    // return purchases[purchaser];
-  	// }
 
     function changeBonus(uint256 newBonusPercent) onlyOwner {
       bonusPercent = newBonusPercent;
@@ -1328,41 +1311,34 @@ contract CrowdsalePaygine is TickerController, Ownable {
   	
   	function endCrowdsale(uint code) onlyOwner {
       require(end = false);
-      uint password = 1234561;
-      require(password == code);
+      require(code == 1234561);
   		end = true;
   		ContractEnded(now);
   	}
 
   	/*
-		Sending 1 ether investor recieves 30000 cents = 30_000 / 100 = 300 токенов
+		Sending 1 ether investor recieves 30000 cents = 30_000 / 100 = 300 tokens
   	*/
  
   	function buyTokens(address beneficiary) public validPurchase payable {
 	    uint256 centsPerETH = getCentsPerETH();
       require(centsPerETH != 0);
 
-      uint256 newTokens = msg.value.mul(centsPerETH).mul(uint256(10)**decimals).div(priceCents.mul(1 ether / 1 wei));
+      uint256 tokens = msg.value.mul(centsPerETH).mul(uint256(10)**18).div(priceInCents.mul(1 ether / 1 wei)).mul(100 + bonusPercent).div(100);
       assert(newTokens != 0);
-
-
-
-      uint tokens = msg.value.mul(ETHUSD).div(priceInCents);  // вычисление токенов за присланный эфир
-      uint bonusTokens = tokens.mul(bonusPercent).div(100);
-	    uint tokensWithBonus = tokens.add(bonusTokens);
 	 
-	    require(token.balanceOf(this) >= tokensWithBonus);
-	    require(maxTokens >= weiRaised + tokensWithBonus);	
-
-	    TokenPurchased(msg.sender, msg.value, tokensWithBonus);  // ивент покупки токенов (покупатель, цена в эфирах, кол-во токенов)
+	    require(token.balanceOf(this) >= tokens);
+	    require(maxTokens >= weiRaised + tokens);	
 	    
-	    weiRaised = weiRaised.add(tokensWithBonus);				// суммировать все купленные токены
+	    weiRaised = weiRaised.add(tokens);				// суммировать все купленные токены
 	    beneficiary.transfer(msg.value);						// перевод создателю всего эфира 
-	    token.transfer(msg.sender, tokensWithBonus);		// контракт с себя переводит токены инвестору
-  	}
+	    token.transfer(msg.sender, tokens);		// контракт с себя переводит токены инвестору
+  	
+      TokenPurchase(msg.sender, msg.value, tokens);
+    }
  
-  function() payable {
-    buyTokens(msg.sender);
-  }
+    function() payable {
+      buyTokens(msg.sender);
+    }
     
 }
