@@ -1050,9 +1050,9 @@ library SafeMath {
 
 
 interface PaygineCoin {
-	function balanceOf(address who) public constant returns (uint256);
+    function balanceOf(address who) public constant returns (uint256);
   function transfer(address to, uint256 value) public returns (bool);
-	function allowance(address owner, address spender) public constant returns (uint256);  	
+    function allowance(address owner, address spender) public constant returns (uint256);   
   function transferFrom(address from, address to, uint256 value) public returns (bool);
   function approve(address spender, uint256 value) public returns (bool);
 }
@@ -1192,7 +1192,7 @@ contract TickerController is Ownable {
     function attachTicker(address _tickerAddress)
         onlyOwner
     {
-         priceTicker = CMCEthereumTicker(_tickerAddress);   
+        priceTicker = CMCEthereumTicker(_tickerAddress);   
     }
     
     function enableTicker() 
@@ -1240,29 +1240,23 @@ contract TickerController is Ownable {
 
 
 
-contract CrowdsalePaygine is TickerController, Ownable {
+contract PaygineCrowdsale is TickerController {
     using SafeMath for uint256;
 
     // The token being sold
-    PaygineCoin public token = PaygineCoin(0x388ace50bfeba98e15af4ab1d754bda7823e34c0);
+    PaygineCoin public token = PaygineCoin(0xccb46aec99e38e09c2847dfd18e54ba2e59b1ba2);
 
     // Price of 1 token in USD cents
     uint256 public priceInCents = 100;
     
     // Address where funds are collected
-    address public beneficiary; 
-
-    // Price for 1 eth in USD cents
-    uint256 public ETHUSD;   
+    address public wallet; 
 
     // How many wei of funding we have raised
     uint256 public weiRaised = 0;  
 
     // Number of tokens already sold through this contract*/
     uint256 public funded = 0;
-
-    // How many distinct addresses have invested 
-    uint256 public investorCount = 0;
 
     // Mac tokens to crowdsale
     uint256 public maxSupply = 3000000 * 10 ** 18; // 3_000_000 tokens sales on crowdsale 
@@ -1276,69 +1270,67 @@ contract CrowdsalePaygine is TickerController, Ownable {
 
 
     event TokenPurchase(address indexed purchaser, address indexed beneficiary, uint256 amount);
-    event ContractPaused(uint time);
-    event ContractResumed(uint time);
-    event ContractEnded(uint time);
+    event CrowdsalePaused(uint time);
+    event CrowdsaleResumed(uint time);
+    event CrowdsaleEnded(uint time);
 
 
-    function CrowdsalePaygine() {
-      beneficiary = msg.sender;
+    function PaygineCrowdsale() {
+      wallet = msg.sender;
     }
 
     function changeBonus(uint256 newBonusPercent) onlyOwner {
       bonusPercent = newBonusPercent;
     }
  
-  	modifier validPurchase() {
-      require(msg.value != 0);
-      require(priceTicker.getEnabled());
-      require(pause == false);
-      require(end == false);
-    	_;
-  	}
+    modifier validPurchase() {
+        require(msg.value != 0);
+        require(priceTicker.getEnabled());
+        require(pause == false);
+        require(end == false);
+        _;
+    }
 
-  	function pauseCrowdsale() onlyOwner {
-      require(pause == false);
-  		pause = true;
-  		ContractPaused(now);
-  	}
+    function pauseCrowdsale() onlyOwner {
+        require(pause == false);
+        pause = true;
+        CrowdsalePaused(now);
+    }
 
-  	function resumeCrowdsale() onlyOwner {
-  		require(pause = true);
-      pause = false;
-  		ContractResumed(now);
-  	}
-  	
-  	function endCrowdsale(uint code) onlyOwner {
-      require(end = false);
-      require(code == 1234561);
-  		end = true;
-  		ContractEnded(now);
-  	}
+    function resumeCrowdsale() onlyOwner {
+        require(pause == true);
+        pause = false;
+        CrowdsaleResumed(now);
+    }
+    
+    function endCrowdsale(uint code) onlyOwner {
+        require(end == false);
+        require(code == 1234561);
+        end = true;
+        CrowdsaleEnded(now);
+    }
 
-  	/*
-		Sending 1 ether investor recieves 30000 cents = 30_000 / 100 = 300 tokens
-  	*/
  
-  	function buyTokens(address beneficiary) public validPurchase payable {
-	    uint256 centsPerETH = getCentsPerETH();
-      require(centsPerETH != 0);
+    function buyTokens(address beneficiary) public validPurchase payable {
+        uint256 centsPerETH = getCentsPerETH();
+        require(centsPerETH != 0);
 
-      uint256 tokens = msg.value.mul(centsPerETH).mul(uint256(10)**18).div(priceInCents.mul(1 ether / 1 wei)).mul(100 + bonusPercent).div(100);
-      assert(newTokens != 0);
-	 
-	    require(token.balanceOf(this) >= tokens);
-	    require(maxTokens >= weiRaised + tokens);	
-	    
-	    weiRaised = weiRaised.add(tokens);				// суммировать все купленные токены
-	    beneficiary.transfer(msg.value);						// перевод создателю всего эфира 
-	    token.transfer(msg.sender, tokens);		// контракт с себя переводит токены инвестору
-  	
-      TokenPurchase(msg.sender, msg.value, tokens);
+        uint256 tokens = msg.value.mul(centsPerETH).mul(uint256(10)**18).div(priceInCents.mul(1 ether / 1 wei)).mul(100 + bonusPercent).div(100);
+        
+        require(tokens != 0);
+        require(token.balanceOf(this) >= tokens);
+        require(maxSupply >= funded + tokens);  
+        
+        weiRaised = weiRaised.add(msg.value);
+        funded = funded.add(tokens);
+        wallet.transfer(msg.value);                 
+        token.transfer(beneficiary, tokens);        
+    
+        TokenPurchase(msg.sender, beneficiary, tokens);
     }
  
     function() payable {
-      buyTokens(msg.sender);
+        buyTokens(msg.sender);
     }
     
 }
