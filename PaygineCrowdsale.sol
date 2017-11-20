@@ -1310,7 +1310,7 @@ contract PaygineCrowdsale is TickerController {
         uint256 centsPerETH = getCentsPerETH();
         require(centsPerETH != 0);
 
-        uint256 tokens = msg.value.mul(centsPerETH).mul(uint256(10)**18).div(priceInCents.mul(1 ether / 1 wei)).mul(100 + bonusPercent).div(100);
+        uint256 tokens = msg.value.mul(centsPerETH).div(priceInCents).mul(100 + bonusPercent).div(100);
         
         require(tokens != 0);
         require(token.balanceOf(this) >= tokens);
